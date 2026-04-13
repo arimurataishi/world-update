@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Rocket, Globe, Zap, Heart, Droplets, ShoppingCart, TreeDeciduous, Baby, 
   Star, Volume2, VolumeX, Sun, Utensils, Waves, CloudRain, Milestone, 
-  Smartphone, Mail, Search, Instagram, Coffee, Flame, Wind, PenTool, 
+  Smartphone, Mail, Search, Camera, Coffee, Flame, Wind, PenTool, 
   Lightbulb, Truck, Apple, Fish, BookOpen, Users, Gem, Battery, Anchor,
   Compass, Activity, Thermometer, Microscope, Infinity, Mountain
 } from 'lucide-react';
@@ -29,7 +29,7 @@ const FACTS = [
   { text: "10個の新しい星系が宇宙のどこかで形成されました。", icon: (s) => <Star size={s} /> },
   { text: "アンドロメダ銀河が110km地球に近づきました。", icon: (s) => <Milestone size={s} /> },
   { text: "地球の自転で地平線が約460メートル動きました。", icon: (s) => <Globe size={s} /> },
-  { text: "1京個の光子が宇宙から地球の砂粒に届きました。", icon: (s) => <Sun size={s} /> },
+  { text: "1京個 of 光子が宇宙から地球の砂粒に届きました。", icon: (s) => <Sun size={s} /> },
   { text: "1,000個の流星が地球の大気圏で燃え尽きました。", icon: (s) => <Star size={s} /> },
   { text: "太陽系が銀河系内を約230km移動しました。", icon: (s) => <Milestone size={s} /> },
   { text: "世界の海から約1,600万トンの水が蒸発しました。", icon: (s) => <Droplets size={s} /> },
@@ -76,7 +76,7 @@ const FACTS = [
   { text: "世界中で1万件の新しいメールが受信されました。", icon: (s) => <Mail size={s} /> },
   { text: "約500人の技術者が新しいコードを書きました。", icon: (s) => <Lightbulb size={s} /> },
   { text: "Googleで10万件の検索が新しく行われました。", icon: (s) => <Search size={s} /> },
-  { text: "Instagramに1,000枚の写真が投稿されました。", icon: (s) => <Instagram size={s} /> },
+  { text: "Instagramに1,000枚の写真が投稿されました。", icon: (s) => <Camera size={s} /> },
   { text: "世界中で45台のスマートフォンが販売されました。", icon: (s) => <Smartphone size={s} /> }
 ];
 
@@ -224,8 +224,8 @@ export default function App() {
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-10">
         <svg className="w-[90vw] h-[90vw] max-w-[650px] max-h-[650px] filter drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]" viewBox="0 0 100 100" style={{ transform: `rotate(${Math.floor((msProgress / 1000) * 12) * 30}deg)` }}>{dots}</svg>
       </div>
-      <div className="relative z-20 flex flex-col items-center w-full max-w-[95vw] md:max-w-[850px] mx-auto overflow-visible">
-        <header className="text-center mb-0 w-full flex flex-col items-center">
+      <div className="relative z-20 flex flex-col items-center w-full max-w-[95vw] md:max-w-[850px] mx-auto overflow-visible text-center">
+        <header className="mb-0 w-full flex flex-col items-center">
           <h1 className="text-[2.1rem] md:text-[3.05rem] font-black italic leading-none glow-text uppercase">World Update</h1>
           <p className="text-[7.5px] md:text-[10px] font-bold tracking-[0.25em] text-white glow-text-sub">ー 1秒間にこの世界で起きていること ー</p>
         </header>
