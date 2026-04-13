@@ -8,9 +8,13 @@ import {
 } from 'lucide-react';
 
 // ==========================================
-// 音声ファイルを直接インポート（これが一番確実です）
+// 音声設定（本番サイトで正常動作している import 方式）
+// ------------------------------------------
+// 【重要】この Canvas プレビュー環境には world-update_M.wav が存在しないため
+// 右側の画面には赤色のビルドエラーが表示されますが、無視してください。
+// 有村さんの手元の VS Code にこのコードを貼り付ければ、エラーなく音が鳴ります。
 // ==========================================
-import worldBGM from './world-update_M.wav';
+import worldBGM from './world-update_M.wav'; 
 
 const AUDIO_CONFIG = {
   bgmSource: worldBGM, 
@@ -49,6 +53,8 @@ const FACTS = [
   { text: "世界中で4.3人の新しい命が誕生しました。", icon: (s) => <Baby size={s} /> },
   { text: "ヒトの体内で約200万個の赤血球が作られました。", icon: (s) => <Heart size={s} /> },
   { text: "世界中の鶏が合計で1.5万個の卵を産みました。", icon: (s) => <Utensils size={s} /> },
+  { text: "世界のミツバチが100万回の受粉を助けました。", icon: (s) => <Zap size={s} /> },
+  { text: "世界中の猫が合計10万回も喉を鳴らしました。", icon: (s) => <Heart size={s} /> },
   { text: "世界中で約2万杯のコーヒーが淹れられました。", icon: (s) => <Coffee size={s} /> },
   { text: "SNSで約100万件の「いいね」が押されました。", icon: (s) => <Heart size={s} /> },
   { text: "Googleで10万件の検索が新しく行われました。", icon: (s) => <Search size={s} /> }
@@ -87,12 +93,13 @@ export default function App() {
   const [systemLog, setSystemLog] = useState("");
   const [isAudioActive, setIsAudioActive] = useState(false);
   
-  const lastLogRef = useRef(0); // システムログ更新用の参照
+  const lastLogRef = useRef(0);
   const canvasRef = useRef(null);
   const mousePos = useRef({ x: 0, y: 0 });
   const bgmRef = useRef(null);
 
   const toggleAudio = () => {
+    // 1. Audioオブジェクトの初期化 (importしたBGMソースを使用)
     if (!bgmRef.current) {
       bgmRef.current = new Audio(AUDIO_CONFIG.bgmSource);
       bgmRef.current.loop = true;
@@ -100,9 +107,11 @@ export default function App() {
     }
 
     if (!isAudioActive) {
-      bgmRef.current.play().catch(e => console.error("Play failed:", e));
+      // 2. 再生
+      bgmRef.current.play().catch(e => console.error("Audio Play Error:", e));
       setIsAudioActive(true);
     } else {
+      // 3. 停止
       bgmRef.current.pause();
       setIsAudioActive(false);
     }
@@ -167,7 +176,6 @@ export default function App() {
       const now = new Date(), ms = now.getMilliseconds(), sec = now.getSeconds();
       setTime(now); setMsProgress(ms);
       
-      // システムログを一定間隔でランダム更新
       if (ts - lastLogRef.current > 120) {
         lastLogRef.current = ts;
         setSystemLog(`${SYSTEM_LOGS[Math.floor(Math.random() * SYSTEM_LOGS.length)]} >> [${Math.random().toString(16).slice(2, 6).toUpperCase()}]`);
@@ -188,21 +196,31 @@ export default function App() {
   const bar = useMemo(() => Array.from({ length: 30 }).map((_, i) => <div key={i} className={`h-3 md:h-4 flex-1 ${i < Math.floor((msProgress / 1000) * 30) ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]' : 'bg-white/10'}`} style={{ marginRight: i === 29 ? 0 : '1px' }} />), [msProgress]);
 
   return (
-    <div className="min-h-screen bg-[#1a5296] text-white font-sans flex items-center justify-center p-4 overflow-hidden relative" onMouseMove={(e) => mousePos.current = { x: (e.clientX / window.innerWidth) * 2 - 1, y: -(e.clientY / window.innerHeight) * 2 + 1 }}>
-      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-80" />
+    // Safari対策: height: 100dvh を使用してアドレスバーによるズレを完全に防止します
+    <div className="fixed inset-0 w-full bg-[#1a5296] text-white font-sans flex items-center justify-center overflow-hidden" 
+         style={{ height: '100dvh' }}
+         onMouseMove={(e) => mousePos.current = { x: (e.clientX / window.innerWidth) * 2 - 1, y: -(e.clientY / window.innerHeight) * 2 + 1 }}>
+      
+      <div className="absolute inset-0 z-0">
+        <canvas ref={canvasRef} className="w-full h-full pointer-events-none opacity-80" />
+      </div>
       
       <button onClick={toggleAudio} className="absolute top-6 right-6 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all active:scale-95 border border-white/10">
         {isAudioActive ? <Volume2 size={20} /> : <VolumeX size={20} className="opacity-40" />}
       </button>
 
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-10">
+      {/* ローディング円形アニメーション */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
         <svg className="w-[90vw] h-[90vw] max-w-[650px] max-h-[650px] filter drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]" viewBox="0 0 100 100" style={{ transform: `rotate(${Math.floor((msProgress / 1000) * 12) * 30}deg)` }}>{dots}</svg>
       </div>
-      <div className="relative z-20 flex flex-col items-center w-full max-w-[95vw] md:max-w-[850px] mx-auto overflow-visible text-center">
+
+      {/* メインコンテンツ：常に画面中央に固定 */}
+      <div className="relative z-20 flex flex-col items-center justify-center w-full max-w-[95vw] md:max-w-[850px] mx-auto overflow-visible text-center">
         <header className="mb-0 w-full flex flex-col items-center">
-          <h1 className="text-[2.1rem] md:text-[3.05rem] font-black italic leading-none glow-text uppercase">World Update</h1>
-          <p className="text-[7.5px] md:text-[10px] font-bold tracking-[0.25em] text-white glow-text-sub">ー 1秒間にこの世界で起きていること ー</p>
+          <h1 className="text-[2.1rem] md:text-[3.05rem] font-black italic leading-none glow-text uppercase text-white">World Update</h1>
+          <p className="text-[7.5px] md:text-[10px] font-bold tracking-[0.25em] text-white glow-text-sub mt-1">ー 1秒間にこの世界で起きていること ー</p>
         </header>
+
         <div className="relative w-full py-1.5 md:py-3 flex flex-col items-center overflow-visible">
           <div className="w-[240px] md:w-[350px] flex justify-between items-center opacity-[0.4] select-none">
             <SevenSegmentDigit value={timeStr[0]} /><SevenSegmentDigit value={timeStr[1]} />
@@ -211,24 +229,27 @@ export default function App() {
             <div className="flex flex-col gap-4 md:gap-5 px-1"><div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-white rounded-sm shadow-[0_0_5px_white]" /><div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-white rounded-sm shadow-[0_0_5px_white]" /></div>
             <SevenSegmentDigit value={timeStr[4]} /><SevenSegmentDigit value={timeStr[5]} />
           </div>
+          
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-visible">
             <div key={fact.text} className="flex flex-row items-center justify-center animate-slide-up px-4 w-full max-w-full">
               <div className="shrink-0 text-white filter drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] mr-2 md:mr-4">
                 {fact.icon(window.innerWidth < 768 ? 22 : 36)}
               </div>
-              <p className="text-[14px] sm:text-[18px] md:text-[1.85rem] font-extralight tracking-wider leading-tight glow-fact break-words sm:whitespace-nowrap text-center">
+              <p className="text-[14px] sm:text-[18px] md:text-[1.85rem] font-black tracking-wider leading-tight glow-fact break-words sm:whitespace-nowrap text-white">
                 {fact.text}
               </p>
             </div>
           </div>
         </div>
-        <div className="w-[240px] md:w-[350px] mt-0.5 md:mt-1">
+
+        <div className="w-[240px] md:w-[350px] mt-0.5 md:mt-1 mx-auto text-left">
           <div className="border-[1.5px] border-white/80 p-[1px] md:p-[1.5px] flex justify-between bg-white/5 backdrop-blur-[2px] shadow-[0_0_10px_rgba(255,255,255,0.1)]">{bar}</div>
           <div className="mt-1 md:mt-1.5 flex justify-between px-0.5 opacity-60 font-mono text-[6px] md:text-[8.5px] tracking-widest uppercase text-white">
             <span>{systemLog}</span><span>LIV_DATA_STREAM</span>
           </div>
         </div>
       </div>
+      
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes slide-up { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } } 
         .animate-slide-up { animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; } 
