@@ -4,7 +4,7 @@
   "description": "9つの概念から世界を計算する、思索のための電卓。",
   "lang": "ja",
   "dir": "ltr",
-  "display": "standalone",
+  "display": "browser",
   "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#000000",
