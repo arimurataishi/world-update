@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/concept-calculator",
-      "destination": "/concept-calculator/index.html"
+      "destination": "/world-update/concept-calculator/index.html"
     },
     {
       "source": "/concept-calculator/",
-      "destination": "/concept-calculator/index.html"
+      "destination": "/world-update/concept-calculator/index.html"
     },
     {
       "source": "/world-update/(.*)",
